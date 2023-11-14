@@ -46,6 +46,7 @@ attendance = sh.worksheet("출석")
 gatcha_items = sh.worksheet("가챠")
 store = sh.worksheet("상점")
 character = sh.worksheet("캐릭터")
+sentencemaking = sh.worksheet("문장만들기")
 
 # 워크시트 열 (column) 정리
 # 출석
@@ -71,6 +72,11 @@ STORE_PRICE = 2
 CHARACTER_ACCOUNT = 1
 CHARACTER_NAME = 2
 CHARACTER_MONEY = 3
+
+# 문장만들기
+SENTENCEMAKING_FIRST = 1
+SENTENCEMAKING_SECOND = 2
+
 
 # [/]빼고 전부 제거하는 정규 표현식
 CLEANER = re.compile('[^\w\s\[\]/]')
@@ -104,6 +110,49 @@ def trueOrFalse():
         return "False"
     else:
         return "True"
+
+
+# 참 거짓
+# @return string
+def sentencemaking():
+    result = random.randint(0, 1)
+
+    if result == 0:
+        return "False"
+    else:
+        return "True"
+
+
+# 가챠
+# @param    n:number - 가챠 횟수
+# @return   list
+# API Request   1회 Google Spreadsheet API 3회
+def sentencemaking():
+
+    inventory = []
+    word_list = sentencemaking.col_values(SENTENCEMAKING_FIRST)
+    
+    for _ in range(n):
+        quality = gatcha_helper()
+
+        if quality == "SUPER_RARE":
+            col_data = super_rare_items
+        elif quality == "RARE":
+            col_data = rare_items
+        else:
+            col_data = normal_items
+
+        items = col_data[1:]
+        item_list = list(map(str, items))
+        max_len = len(item_list)
+
+        pick_num = random.randint(0, max_len - 1)
+        inventory.append(item_list[pick_num])
+
+    result = ", ".join(inventory)
+    return result
+
+
 
 
 # 가챠
@@ -312,6 +361,13 @@ class Listener(StreamListener):
                 elif "T" in user_text and "F" in user_text and '/' in user_text:
                     result = trueOrFalse()
                     mastodon.status_reply(notification['status'], result, visibility='unlisted')
+
+                # 문장만들기
+                # 키워드 형식: [문장만들기/1회차]
+                elif "문장만들기" in user_text and "1회차" in user_text and '/' in user_text:
+                    result = sentencemaking()
+                    mastodon.status_reply(notification['status'], result, visibility='unlisted')
+                
 
             else:
                 mastodon.status_reply(notification['status'], "키워드 형식이 올바르지 않은 것 같아요.", visibility='unlisted')
